@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Lector de código QR</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div class="card">
+		<h2>Lector de código QR</h2>
+		<img src="https://i.ibb.co/CMMkVkC/image-qr-code.png" width="300" alt="">
+		<div class="card-content">
+			URL
+			<h2 class="site-backdrop"></h2>
+		</div>
+	</div>
+	<button id="startScanButton">Iniciar escaneo</button>
+	<script src="jquery.min.js"></script>
+	<script src="instascan.min.js"></script>
+	<script>
+		// Obtener la referencia al elemento de video en el que se mostrará la vista de la cámara
+		const videoElement = document.createElement('video');
+
+		// Función para manejar el escaneo de códigos QR
+		function handleScan(result) {
+			// Actualizar el contenido y el fondo según el resultado del escaneo
+			const cardContent = document.querySelector('.card-content');
+			const backdrop = document.querySelector('.site-backdrop');
+			cardContent.textContent = result;
+			backdrop.style.backgroundColor = 'green';
+		}
+
+		// Función para manejar errores de escaneo
+		function handleError(error) {
+			console.error(error);
+		}
+
+		// Función de controlador de eventos para el botón de inicio de escaneo
+		function startScan() {
+			// Acceder al dispositivo de la cámara y comenzar el escaneo
+			navigator.mediaDevices.getUserMedia({ video: true })
+				.then((stream) => {
+					videoElement.srcObject = stream;
+					videoElement.play();
+
+					// Inicializar el escáner de código QR
+					const scanner = new Instascan.Scanner({ video: videoElement });
+					scanner.addListener('scan', handleScan);
+					scanner.addListener('error', handleError);
+					Instascan.Camera.getCameras()
+						.then((cameras) => {
+							if (cameras.length > 0) {
+								scanner.start(cameras[0]); // Usar la primera cámara disponible
+							} else {
+								console.error('No se encontraron cámaras en el dispositivo.');
+							}
+						})
+						.catch((error) => {
+							console.error(error);
+						});
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+
+		// Obtener una referencia al botón de inicio de escaneo
+		const startScanButton = document.getElementById('startScanButton');
+
+		// Vincular el controlador de eventos de clic al botón de inicio de escaneo
+		startScanButton.addEventListener('click', startScan);
+	</script>
+</body>
+</html>
